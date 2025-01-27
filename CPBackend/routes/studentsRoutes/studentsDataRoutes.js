@@ -1,6 +1,6 @@
-import express from "express";
+import {Router} from "express";
 import { getStudentsData } from "../../controller/studentsController/studentsDataController.js";
-const router = express.Router();
+const router = Router();
 
 router.get('/',getStudentsData);
 

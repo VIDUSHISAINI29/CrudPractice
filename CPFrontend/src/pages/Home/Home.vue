@@ -2,14 +2,23 @@
 import axios from 'axios';
 import { onMounted, ref } from 'vue';
 
-const fetchCyferdData = async() => {
-     const result = await axios.get(`${import.meta.env.CYFERD_HOST_URL}/api/v2/data/${import.meta.env.CYFERD_COLLECTION_ID}`);
-     console.log('result = ', result);
-     
+const fetchCyferdData = async () => {
+    try {
+        const result = await axios.get(`${import.meta.env.BACKEND_URL}/students-data`, {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+     //    console.log('Response headers:', result.headers);  // Log response headers
+        console.log('Response body:', result.data);  // Log the response body
+    } catch (error) {
+        console.log("Error in fetching data on frontend", error);
+    }
 }
 
-onMounted(() => {
-     fetchCyferdData();
+
+onMounted(async() => {
+     await fetchCyferdData();
 })
 </script>
 

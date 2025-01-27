@@ -3,6 +3,6 @@ import studentRoutesIndex from './studentsRoutes/index.js'
 
 const router = express.Router();
 
-router.get('/', studentRoutesIndex);
+router.use('/',studentRoutesIndex);
 
 export default router;
