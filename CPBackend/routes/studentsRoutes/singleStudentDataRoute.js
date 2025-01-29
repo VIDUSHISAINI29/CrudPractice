@@ -3,6 +3,6 @@ import { getSingleStudentData } from "../../controller/studentsController/single
 
 const router = Router();
 
-router.post('/',getSingleStudentData);
+router.get('/',getSingleStudentData);
 
 export default router;

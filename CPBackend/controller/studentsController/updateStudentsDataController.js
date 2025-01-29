@@ -10,7 +10,7 @@ export async function updateStudentsData(req, res){
         const {recordId, name, phoneNumber, class:standard} = req.body;
         const fieldToUpdate = {
             record : {
-
+                
             }
         };
         if(!recordId){
@@ -25,7 +25,7 @@ export async function updateStudentsData(req, res){
         if(standard){
             fieldToUpdate.record.class =  standard;
         }
-        if(Object.keys(fieldToUpdate).length === 0 ){
+        if(Object.keys(fieldToUpdate.record).length === 0 ){
             return res.status(400).json({message: "At least one field is required."})
         }
         const result = await axios.patch(`${baseUrl}/api/v2/data/${collectionId}/${recordId}`, fieldToUpdate, {
@@ -33,7 +33,7 @@ export async function updateStudentsData(req, res){
                 Authorization: `Bearer ${token}`
             }
         } );
-        res.status(200).json(result.data.list);
+        res.status(200).json(result.data);
 
     } catch (error) {
         console.log("error in updating student's record ", error);

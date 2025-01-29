@@ -5,9 +5,9 @@ const baseUrl = 'https://mysports.cyferd.cloud';
 const collectionId = '23bf21b7-6322-45f8-b156-c09b56aebe8e';
 
 export async function getSingleStudentData(req, res){
-    const {recordId} = req.body;
+    const {id} = req.body;
     try {
-        const result = await axios.post(`${baseUrl}/api/v2/data/${collectionId}/${recordId}`, {
+        const result = await axios.get(`${baseUrl}/api/v2/data/${collectionId}?id=${id}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json"

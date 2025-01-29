@@ -12,6 +12,8 @@ const studentsData = ref(null);
 const addDataMessage = ref(null);
 const rows = ref(null);
 
+// # Fetching data for display on table
+
 const fetchCyferdData = async (req, res) => {
    try {
       const result = await axios.get(
@@ -25,6 +27,8 @@ const fetchCyferdData = async (req, res) => {
       console.log("Error in fetching data on frontend", error);
    }
 };
+
+// # Function for deleting any particular rows/record
 
 async function deleteData(recId, index) {
    const idTodelt = {
@@ -53,13 +57,28 @@ async function deleteData(recId, index) {
    }
 }
 
+// # Function for sending recordId of the record that is desired to update
+
 const editData = async(id) => {
     global.recordIdToEdit = id;
     global.showEditForm = !global.showEditForm;
 }
-watch(global.studentsData, async () => {
-   await fetchCyferdData();
+
+// # Updating record in the table after editing or creating any particular record
+
+watch(() => global.showEditForm, async (newValue, oldValue) => {
+    if(newValue === false){
+           await fetchCyferdData();
+    }
 });
+watch(() => global.showForm, async (newValue, oldValue) => {
+    if(newValue === false){
+           await fetchCyferdData();
+    }
+});
+
+// # Fetching date when page is refreshed or started
+
 onMounted(async () => {
    await fetchCyferdData();
 });
@@ -68,7 +87,7 @@ onMounted(async () => {
 <template>
    <div
       :class="[
-         'tw-relative tw-flex tw-flex-col tw-items-center tw-bg-gray-200 tw-p-5',
+         'tw-relative tw-flex tw-flex-col  tw-items-center tw-bg-gray-200 tw-p-5',
          rows < 13 ? 'tw-h-screen' : '',
       ]">
       <div
@@ -83,6 +102,9 @@ onMounted(async () => {
                   Create
                </span>
             </div>
+
+        <!--# Table Header -->
+
             <div
                class="tw-flex tw-border-2 tw-border-white tw-bg-blue-950 tw-text-white">
                <div
@@ -111,6 +133,9 @@ onMounted(async () => {
                </div>
             </div>
          </div>
+
+    <!--# Rows of Table Using loop on array of all students data -->
+
          <div
             v-for="(student, index) in studentsData"
             :key="index"
@@ -142,14 +167,24 @@ onMounted(async () => {
             </div>
          </div>
       </div>
+
+      <!-- # Loading State -->
+
       <div class="tw-absolute tw-top-[40%]" v-else>
          <ProgressSpinner />
       </div>
+
+      <!--# Displaying Create From using State Management -->
+
       <div
          v-if="global.showForm"
-         class="tw-fixed tw-top-0 tw-flex tw-h-[100vh] tw-w-full tw-items-center tw-justify-center tw-bg-[#00000033]">
+         class="tw-fixed tw-top-0  tw-flex tw-h-[100vh] tw-w-full tw-items-center tw-justify-center tw-bg-[#00000033]">
          <CreateForm />
       </div>
+
+        <!--# Displaying Edit From using State Management -->
+
+
       <div
          v-if="global.showEditForm"
          class="tw-fixed tw-top-0 tw-flex tw-h-[100vh] tw-w-full tw-items-center tw-justify-center tw-bg-[#00000033]">

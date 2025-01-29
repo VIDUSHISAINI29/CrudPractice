@@ -1,26 +1,21 @@
 <script setup>
 import axios from 'axios';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import{ useGlobalStore} from "@/stores/global.js"
 const global = useGlobalStore();
 const digitsPhoneNumber = ref(null);
+const checkPhoneNumber = ref(false);
 
-// const fetchCyferdData = async (req, res) => {
-//     try {
-      
-//         const result = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/students-data`);
-//         global.studentsData = result.data;
-//     } catch (error) {
-//         console.log("Error in fetching data on frontend", error);
-//     }
-// }
+// # Function for posting data
 
 const postData = async () => {
      digitsPhoneNumber.value = String(global.phoneNumber).split('').length
-    if(digitsPhoneNumber.value !== 10){
+    if(digitsPhoneNumber.value !== 10 ){
         alert("Contact must contain 10 digits!")
     }
-    else{
+    else if(global.phoneNumber < 0){
+        alert("Contact number must be positve")
+    }else{
         console.log(typeof(global.phoneNumber), " = dgts");
         const dataToPost = {
         name: global.name,
@@ -44,6 +39,21 @@ const postData = async () => {
         }
 }
 
+// Function fo validating contact details 
+
+function validatePhoneNumber(){
+const digitsWhileTyping = String(global.phoneNumber).split('').length;
+if(digitsWhileTyping > 1 && digitsWhileTyping !==10){
+    checkPhoneNumber.value = true;
+}
+else{
+    checkPhoneNumber.value = false;
+}
+}
+
+// # Function for hiding from and calling posting function 
+ 
+
 async function hideForm(){
     await postData();
    if(digitsPhoneNumber.value === 10){
@@ -52,10 +62,15 @@ async function hideForm(){
 }
 }
 
+watch(() => global.phoneNumber, async(newValue) => {
+    validatePhoneNumber();
+})
 
 </script>
+
+<!-- # Form for creating new record  -->
 <template>
-  <div  class="tw-text-blue-950  tw-bg-blue-950  tw-py-4 tw-gap-6 tw-rounded-lg tw-w-[500px] tw-p-2 tw-flex-col tw-flex tw-justify-center tw-items-center">
+  <div  class="tw-text-blue-950   tw-bg-blue-950  tw-py-4 tw-gap-6 tw-rounded-lg tw-w-[500px] tw-p-2 tw-flex-col tw-flex tw-justify-center tw-items-center">
     <div class=" tw-flex  tw-w-full">
         <span class="tw-underline tw-text-sky-200 tw-text-lg tw-font-semibold tw-w-[65%] tw-text-end">Student's Detail</span><i @click="global.showForm = !global.showForm" class="tw-text-white tw-cursor-pointer tw-w-[33%] tw-text-end tw-text-3xl ri-close-circle-fill"></i>
     </div>
@@ -65,8 +80,11 @@ async function hideForm(){
     <div class="tw-flex tw-gap-2 tw-items-center tw-bg-gray-300 tw-p-2 tw-rounded-md">
         <span class="tw-w-28 tw-text-center tw-text-sm tw-font-semibold ">Class</span><span>:</span> <input v-model="global.standard" class=" tw-rounded-md tw-p-2 tw-w-60 tw-text-sm tw-items-center tw-px-2 tw-outline-none"  type="text">
     </div>
-    <div class="tw-flex tw-gap-2 tw-items-center tw-bg-gray-300 tw-p-2 tw-rounded-md">
+    <div class="tw-flex tw-flex-col  tw-items-end tw-bg-gray-300 tw-p-2 tw-rounded-md">
+    <div class="tw-flex tw-gap-2 tw-items-center">
         <span class="tw-w-28 tw-text-center tw-text-sm tw-font-semibold ">Contact</span><span>:</span> <input v-model="global.phoneNumber" class=" tw-rounded-md tw-p-2 tw-w-60 tw-text-sm tw-items-center tw-px-2 tw-outline-none"  type="number">
+    </div>   
+    <span v-if="checkPhoneNumber" class="tw-w-48 tw-text-center tw-text-red-600 text tw-text-[12px] tw-font-semibold ">Contact must contain 10 digits *</span>
     </div>
     <div class="tw-mb-2">
         <span @click="hideForm" class="tw-cursor-pointer  tw-bg-gray-300 tw-rounded-md tw-p-1 tw-px-3  tw-font-semibold">Submit</span>
