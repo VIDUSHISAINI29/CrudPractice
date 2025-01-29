@@ -6,5 +6,10 @@ export const useGlobalStore = defineStore('global', () => {
     const phoneNumber = ref(null);
     const recordId = ref(null);
     const showForm = ref(false);
-    return{name, standard, phoneNumber, recordId, showForm}
+    const getDataRepeat = ref(false);
+    const isLoading = ref(false);
+    const showEditForm = ref(false);
+    const studentsData = ref(null);
+    const recordIdToEdit = ref(null);
+    return{name, standard, phoneNumber, recordId, showForm, studentsData, recordIdToEdit, showEditForm}
 })

@@ -24,7 +24,7 @@ export async function getStudentsData(req, res) {
             }
         });
 
-        console.log('result = ', list);  // This will log the resolved list
+        // console.log('result = ', list);  // This will log the resolved list
         res.status(200).json(list);  // Send the resolved list in the response
        
     } catch (error) {

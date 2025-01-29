@@ -16,14 +16,16 @@ export async function addStudentsData(req, res){
             phoneNumber
            }
         }
+        console.log("student data to add = ", dataToPost);
         const postData = await axios.post(`${baseUrl}/api/v2/data/${collectionId}`, dataToPost, {
             headers: {
-                Authorization: `Bearer ${token}`
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json"
             }
         });
         
         res.status(200).json({data:postData.data.list,
-                              message: "Student detail added successfull."
+                              message: "Student detail added successfully."
         })
     } catch (error) {
         console.log("error in posting data ", error);

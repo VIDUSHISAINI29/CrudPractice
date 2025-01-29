@@ -20,6 +20,7 @@ export async function deleteStudentsData(req, res) {
         const result = await axios.delete(`${baseUrl}/api/v2/data/${collectionId}/${recordId}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json"
             },
         });
 

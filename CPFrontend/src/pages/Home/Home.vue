@@ -1,85 +1,161 @@
 <script setup>
-import axios from 'axios';
-import { onMounted, ref } from 'vue';
-import Form from '@/components/Form.vue'
-import { useGlobalStore } from '@/stores/global';
-import { _ } from 'numeral';
+import axios from "axios";
+import { onMounted, ref, watch } from "vue";
+import Form from "@/components/CreateForm.vue";
+import { useGlobalStore } from "@/stores/global";
+import ProgressSpinner from "primevue/progressspinner";
+import CreateForm from "@/components/CreateForm.vue";
+import EditForm from '@/components/EditForm.vue'
 
 const global = useGlobalStore();
 const studentsData = ref(null);
 const addDataMessage = ref(null);
+const rows = ref(null);
 
 const fetchCyferdData = async (req, res) => {
-  
-    try {
-      
-        const result = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/students-data`);
-        studentsData.value = result.data;
-     //    console.log('Response headers:', result.headers);  // Log response headers
-        // console.log('students data:', studentsData.value);  // Log the response body
-    } catch (error) {
-        console.log("Error in fetching data on frontend", error);
-    }
+   try {
+      const result = await axios.get(
+         `${import.meta.env.VITE_BACKEND_URL}/students-data`,
+      );
+      global.studentsData = result.data;
+      studentsData.value = global.studentsData
+      rows.value = studentsData.value.length;
+      global.isLoading = true;
+   } catch (error) {
+      console.log("Error in fetching data on frontend", error);
+   }
+};
+
+async function deleteData(recId, index) {
+   const idTodelt = {
+      recordId: recId,
+   };
+   try {
+      const result = await axios.delete(
+         `${import.meta.env.VITE_BACKEND_URL}/delete-data`,
+         { data: idTodelt },
+      );
+
+      await fetchCyferdData();
+      if (index === 1) {
+         index = index + "st";
+      } else if (index === 2) {
+         index = index + "nd";
+      } else if (index === 3) {
+         index = index + "rd";
+      } else {
+         index = index + "th";
+      }
+      alert(index + " row deleted successfully !");
+      global.isLoading = true;
+   } catch (error) {
+      console.log("error in deleting data ", error);
+   }
 }
 
-
-function createData(){
-    global.showForm = !global.showForm;
-    console.log("clicked");
-    
+const editData = async(id) => {
+    global.recordIdToEdit = id;
+    global.showEditForm = !global.showEditForm;
 }
-async function deleteData (recId){
-
-    await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/delete-data/${recId}`);
-    console.log(recId," deleted successfully");
-    await fetchCyferdData();
-    
-}
-
-async function test(recId){
-
-    // await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/delete-data/${recId}`);
-    console.log(recId," deleted successfully");
-    // await fetchCyferdData();
-}
-onMounted(async() => {
-     await fetchCyferdData();
-})
+watch(global.studentsData, async () => {
+   await fetchCyferdData();
+});
+onMounted(async () => {
+   await fetchCyferdData();
+});
 </script>
 
 <template>
- <div class="tw-flex tw-relative tw-justify-center tw-flex-col tw-items-center tw-bg-gray-200 tw-p-5">
-     
-      <div class="tw-w-[720px]   tw-p-1 tw-flex tw-flex-col tw-justify-center tw-items-center">
-        <div class="tw-flex tw-flex-col tw-gap-2">
-          <div class="tw-flex tw-justify-end tw-w-full tw-items-center">
-               <span @click="createData" class="tw-bg-blue-950 tw-p-2 tw-cursor-pointer tw-rounded-lg tw-text-white"> <i class="ri-add-line tw-text-lg"></i> Create</span>
-          </div>
-          <div class="tw-flex tw-bg-blue-950 tw-text-white tw-border-white tw-border-2 ">
-            <div class="tw-p-2 tw-w-16 tw-border-r-2 tw-border-white  tw-text-sm tw-text-center"><span>Sr. No.</span></div>
+   <div
+      :class="[
+         'tw-relative tw-flex tw-flex-col tw-items-center tw-bg-gray-200 tw-p-5',
+         rows < 13 ? 'tw-h-screen' : '',
+      ]">
+      <div
+         v-if="global.isLoading"
+         class="tw-mt-10 tw-flex tw-w-[720px] tw-flex-col tw-items-center tw-justify-center tw-p-1">
+         <div class="tw-flex tw-flex-col tw-gap-2">
+            <div class="tw-flex tw-w-full tw-items-center tw-justify-end">
+               <span
+                  @click="global.showForm = !global.showForm"
+                  class="tw-cursor-pointer tw-rounded-lg tw-bg-blue-950 tw-p-2 tw-text-white">
+                  <i class="ri-add-line tw-text-lg"></i>
+                  Create
+               </span>
+            </div>
+            <div
+               class="tw-flex tw-border-2 tw-border-white tw-bg-blue-950 tw-text-white">
+               <div
+                  class="tw-w-16 tw-border-r-2 tw-border-white tw-p-2 tw-text-center tw-text-sm">
+                  <span>Sr. No.</span>
+               </div>
 
-               <div class="tw-p-2 tw-border-r-2 tw-border-white  tw-w-48 tw-text-sm tw-text-center"><span>Name</span></div>
-               <div class="tw-p-2 tw-border-r-2 tw-border-white  tw-w-32 tw-text-sm tw-text-center"><span>Class</span></div>
-               <div class="tw-p-2 tw-border-r-2 tw-border-white  tw-w-40 tw-text-sm tw-text-center"><span>Phone Number</span></div>
-               <div class="tw-p-2 tw-border-r-2 tw-border-white  tw-w-20 tw-text-sm tw-text-center"><span>Edit</span></div>
-               <div class="tw-p-2   tw-w-20 tw-text-sm tw-text-center"><span>Delete</span></div>
-          </div>
-        </div>
-        <div v-for="(student, index) in studentsData" :key="index" class="tw-bg-gray-100 tw-flex tw-border-white tw-border-b-2 tw-border-x-2 ">
-
-               <div class="tw-p-2 tw-w-16 tw-border-r-2 tw-border-white  tw-text-sm tw-text-center"><span>{{index + 1}}.</span></div>
-               <div class="tw-p-2 tw-border-r-2 tw-border-white  tw-w-48 tw-text-sm tw-text-center"><span>{{student.name}}</span></div>
-               <div class="tw-p-2 tw-border-r-2 tw-border-white  tw-w-32 tw-text-sm tw-text-center"><span>{{ student.class }}</span></div>
-               <div class="tw-p-2 tw-border-r-2 tw-border-white  tw-w-40 tw-text-sm tw-text-center"><span>{{student.phoneNumber}}</span></div>
-               <div class="   tw-w-20 tw-border-r-2 tw-cursor-pointer tw-border-white tw-text-sm tw-flex tw-items-center tw-justify-center"><i class="tw-text-cyan-500 tw-text-2xl ri-edit-2-fill"></i></div>
-               <div @click="test(student.id)" class="   tw-w-20  tw-cursor-pointer tw-border-white tw-text-sm tw-flex tw-items-center tw-justify-center"><i  class="tw-text-red-700 tw-text-2xl ri-close-circle-fill"></i></div>
-          </div>
+               <div
+                  class="tw-w-48 tw-border-r-2 tw-border-white tw-p-2 tw-text-center tw-text-sm">
+                  <span>Name</span>
+               </div>
+               <div
+                  class="tw-w-32 tw-border-r-2 tw-border-white tw-p-2 tw-text-center tw-text-sm">
+                  <span>Class</span>
+               </div>
+               <div
+                  class="tw-w-40 tw-border-r-2 tw-border-white tw-p-2 tw-text-center tw-text-sm">
+                  <span>Phone Number</span>
+               </div>
+               <div
+                  class="tw-w-20 tw-border-r-2 tw-border-white tw-p-2 tw-text-center tw-text-sm">
+                  <span>Edit</span>
+               </div>
+               <div class="tw-w-20 tw-p-2 tw-text-center tw-text-sm">
+                  <span>Delete</span>
+               </div>
+            </div>
+         </div>
+         <div
+            v-for="(student, index) in studentsData"
+            :key="index"
+            class="tw-flex tw-border-x-2 tw-border-b-2 tw-border-white tw-bg-gray-100">
+            <div
+               class="tw-w-16 tw-border-r-2 tw-border-white tw-p-2 tw-text-center tw-text-sm">
+               <span>{{ index + 1 }}.</span>
+            </div>
+            <div
+               class="tw-w-48 tw-border-r-2 tw-border-white tw-p-2 tw-text-center tw-text-sm">
+               <span>{{ student.name }}</span>
+            </div>
+            <div
+               class="tw-w-32 tw-border-r-2 tw-border-white tw-p-2 tw-text-center tw-text-sm">
+               <span>{{ student.class }}</span>
+            </div>
+            <div
+               class="tw-w-40 tw-border-r-2 tw-border-white tw-p-2 tw-text-center tw-text-sm">
+               <span>{{ student.phoneNumber }}</span>
+            </div>
+            <div
+               class="tw-flex tw-w-20  tw-items-center tw-justify-center tw-border-r-2 tw-border-white tw-text-sm">
+               <i @click="editData(student.id)" class="ri-edit-2-fill tw-cursor-pointer tw-text-2xl tw-text-cyan-400"></i>
+            </div>
+            <div
+               
+               class="tw-flex tw-w-20  tw-items-center tw-justify-center tw-border-white tw-text-sm">
+               <i @click="deleteData(student.id, index + 1)" class="ri-close-circle-fill tw-cursor-pointer tw-text-2xl tw-text-red-600"></i>
+            </div>
+         </div>
       </div>
-  
-    <div v-if="global.showForm" class="tw-absolute tw-w-full tw-h-screen tw-flex tw-justify-center tw-bg-[#00000033] tw-items-center">
-        <Form />
-    </div>
- </div>
+      <div class="tw-absolute tw-top-[40%]" v-else>
+         <ProgressSpinner />
+      </div>
+      <div
+         v-if="global.showForm"
+         class="tw-fixed tw-top-0 tw-flex tw-h-[100vh] tw-w-full tw-items-center tw-justify-center tw-bg-[#00000033]">
+         <CreateForm />
+      </div>
+      <div
+         v-if="global.showEditForm"
+         class="tw-fixed tw-top-0 tw-flex tw-h-[100vh] tw-w-full tw-items-center tw-justify-center tw-bg-[#00000033]">
+         <EditForm />
+      </div>
+   </div>
 </template>
 
 <style scoped></style>
