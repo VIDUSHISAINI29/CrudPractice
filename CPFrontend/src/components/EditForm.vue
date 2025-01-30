@@ -1,10 +1,12 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted , watch} from 'vue';
 import { useGlobalStore } from '@/stores/global';
 import axios from "axios";
 const global = useGlobalStore();
 
 const selectedStudentsData = ref(null);
+const checkPhoneNumber = ref(false);
+const digitsPhoneNumber = ref(null);
 
 // # Function for selecting a student's record to edit and fillings fields with data already recorded
 
@@ -36,6 +38,13 @@ async function selectingStudentToEdit(){
 // # Function for updating any particular record
 
 async function updateData(){
+    digitsPhoneNumber.value = String(global.phoneNumber).split("").length;
+   if (digitsPhoneNumber.value !== 10) {
+      alert("Contact must contain 10 digits!");
+   } else if (global.phoneNumber < 0) {
+      alert("Contact number must be positve");
+   }
+else{
     try{
         const dataToUpdate = {
         recordId: global.recordIdToEdit,
@@ -52,6 +61,25 @@ async function updateData(){
         console.log("error in updating data on frontend",error);
     }
 }
+}
+
+
+function validatePhoneNumber() {
+   const digitsWhileTyping = String(global.phoneNumber).split("").length;
+   if (digitsWhileTyping > 1 && digitsWhileTyping !== 10) {
+      checkPhoneNumber.value = true;
+   } else {
+      checkPhoneNumber.value = false;
+   }
+}
+
+watch(
+   () => global.phoneNumber,
+   async (newValue) => {
+      validatePhoneNumber();
+   },
+);
+
 onMounted(async() => {
     await selectingStudentToEdit();
 })
@@ -70,8 +98,23 @@ onMounted(async() => {
       <div class="tw-flex tw-gap-2 tw-items-center tw-bg-gray-300 tw-p-2 tw-rounded-md">
           <span class="tw-w-28 tw-text-center tw-text-sm tw-font-semibold ">Class</span><span>:</span> <input v-model="global.standard" class=" tw-rounded-md tw-p-2 tw-w-60 tw-text-sm tw-items-center tw-px-2 tw-outline-none"  type="text">
       </div>
-      <div class="tw-flex tw-gap-2 tw-items-center tw-bg-gray-300 tw-p-2 tw-rounded-md">
-          <span class="tw-w-28 tw-text-center tw-text-sm tw-font-semibold ">Contact</span><span>:</span> <input v-model="global.phoneNumber" class=" tw-rounded-md tw-p-2 tw-w-60 tw-text-sm tw-items-center tw-px-2 tw-outline-none"  type="number">
+      <div
+         class="tw-flex tw-flex-col tw-items-end tw-rounded-md tw-bg-gray-300 tw-p-2">
+         <div class="tw-flex tw-items-center tw-gap-2">
+            <span class="tw-w-28 tw-text-center tw-text-sm tw-font-semibold">
+               Contact
+            </span>
+            <span>:</span>
+            <input
+               v-model="global.phoneNumber"
+               class="tw-w-60 tw-items-center tw-rounded-md tw-p-2 tw-px-2 tw-text-sm tw-outline-none"
+               type="number" />
+         </div>
+         <span
+            v-if="checkPhoneNumber"
+            class="text tw-w-48 tw-text-center tw-text-[12px] tw-font-semibold tw-text-red-600">
+            Contact must contain 10 digits *
+         </span>
       </div>
       <div class="tw-mb-2">
           <span @click="updateData"  class="tw-cursor-pointer  tw-bg-gray-300 tw-rounded-md tw-p-1 tw-px-3  tw-font-semibold">Submit</span>
